@@ -23,10 +23,11 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - `README.md`: rewritten for the current repo, menu, update, and pause/resume.
 
 ### Fixed
+- `install_wg.sh`: the public key parse kept the trailing `=`, so the failover can realign the endpoint.
+- `install_wg.sh`: the failover timer has `AccuracySec=1s`. Without it, systemd can run the check up to a minute late.
 - Pause no longer deletes the unit files; it used `systemctl disable`, which removed the `/etc/systemd/system` symlinks.
 
 ### Known issues (not yet fixed)
-- `install_wg.sh`: the public key parse drops the trailing `=` from base64 keys.
 - `install_cloudflare.sh`: the Cloudflare API response is used as a printf format string.
 - Input is not validated (missing arguments, non-numeric intervals), and the final "Installed" message prints even if a step failed.
 - The Cloudflare API token is stored in `automatic_update.sh` with default file permissions.

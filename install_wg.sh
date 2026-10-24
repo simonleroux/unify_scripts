@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -44,7 +44,7 @@ if [ -z "$WG_CONFIG" ]; then
     exit 1
 fi
 
-PUBLIC_KEY=$(echo "$WG_CONFIG" | grep "PublicKey" | head -n1 | cut -d= -f2 | tr -d ' ')
+PUBLIC_KEY=$(echo "$WG_CONFIG" | grep "PublicKey" | head -n1 | cut -d= -f2- | tr -d ' ')
 ENDPOINT_PORT=$(echo "$WG_CONFIG" | grep "Endpoint" | head -n1 | cut -d: -f2 | tr -d ' ')
 
 if [ -z "$PUBLIC_KEY" ]; then
@@ -146,6 +146,7 @@ Description=Run WireGuard failover check every $INTERVAL_SEC seconds
 [Timer]
 OnBootSec=10
 OnUnitActiveSec=$INTERVAL_SEC
+AccuracySec=1s
 Unit=$SERVICE_NAME
 
 [Install]
