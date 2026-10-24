@@ -1,6 +1,6 @@
 #!/bin/sh
 # Unifi_scripts Main Menu
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 REPO_URL="https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main"
 TMP_DIR="/tmp/stetnet_scripts"
@@ -37,7 +37,7 @@ show_menu() {
     echo "4) Pause installed scripts (disable timers)"
     echo "5) Resume installed scripts (enable timers)"
     echo "6) Uninstall All STETNET scripts"
-    echo "7) Exit"
+    echo "0) Exit"
     echo "====================================="
 }
 
@@ -147,7 +147,7 @@ resume_installed() {
 
 while true; do
     show_menu
-    echo -n "Select an option [1-7]: "
+    echo -n "Select an option [0-6]: "
     read choice < /dev/tty
     case $choice in
         1)
@@ -224,7 +224,7 @@ while true; do
             echo -n "Press Enter to return to menu..."
             read dummy < /dev/tty
             ;;
-        7)
+        0)
             exit 0
             ;;
         *)
