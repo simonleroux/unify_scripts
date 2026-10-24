@@ -34,6 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/head
 4) Pause installed scripts (disable timers)
 5) Resume installed scripts (enable timers)
 6) Uninstall All STETNET scripts
+7) Check status (Cloudflare and WireGuard)
 0) Exit
 ```
 

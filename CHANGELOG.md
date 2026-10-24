@@ -9,6 +9,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - Menu options 4 and 5 pause and resume the Cloudflare/NextDNS and WireGuard timers. Pausing keeps the unit files and only removes the enable links.
 - `VERSION` in every script. The menu shows the installed and server versions, and generated scripts and `status.sh` record theirs.
 - `CHANGELOG.md` (this file).
+- Menu option 7 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
 
 ### Changed
 - `menu.sh`: exit the menu with option 0 (was 7). Options 1 to 6 are unchanged.
