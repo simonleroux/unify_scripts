@@ -33,8 +33,8 @@ curl -fsSL https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/head
 3) Update installed scripts (keeps your settings)
 4) Pause installed scripts (disable timers)
 5) Resume installed scripts (enable timers)
-6) Uninstall All STETNET scripts
-7) Check status (Cloudflare and WireGuard)
+6) Check status
+7) Uninstall
 0) Exit
 ```
 
@@ -125,7 +125,7 @@ Remove **all** STETNET services and scripts (asks for confirmation):
 curl -fsSL https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main/uninstall_all.sh | sh
 ```
 
-Or use menu option 6.
+Or use menu option 7.
 
 ---
 

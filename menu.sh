@@ -1,6 +1,6 @@
 #!/bin/sh
 # Unifi_scripts Main Menu
-VERSION="1.0.2"
+VERSION="1.0.4"
 
 REPO_URL="https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main"
 TMP_DIR="/tmp/stetnet_scripts"
@@ -36,8 +36,8 @@ show_menu() {
     echo "3) Update installed scripts (keeps your settings)"
     echo "4) Pause installed scripts (disable timers)"
     echo "5) Resume installed scripts (enable timers)"
-    echo "6) Uninstall All STETNET scripts"
-    echo "7) Check status (Cloudflare and WireGuard)"
+    echo "6) Check status"
+    echo "7) Uninstall"
     echo "0) Exit"
     echo "====================================="
 }
@@ -234,14 +234,14 @@ while true; do
             read dummy < /dev/tty
             ;;
         6)
-            curl -fsSL --max-time 60 "$REPO_URL/uninstall_all.sh" -o "$TMP_DIR/uninstall_all.sh" && sh "$TMP_DIR/uninstall_all.sh"
-            echo ""
+            status_installed
             echo ""
             echo -n "Press Enter to return to menu..."
             read dummy < /dev/tty
             ;;
         7)
-            status_installed
+            curl -fsSL --max-time 60 "$REPO_URL/uninstall_all.sh" -o "$TMP_DIR/uninstall_all.sh" && sh "$TMP_DIR/uninstall_all.sh"
+            echo ""
             echo ""
             echo -n "Press Enter to return to menu..."
             read dummy < /dev/tty
