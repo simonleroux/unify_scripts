@@ -1,6 +1,6 @@
 #!/bin/sh
 # Unifi_scripts Main Menu
-VERSION="1.0.4"
+VERSION="1.0.5"
 
 REPO_URL="https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main"
 TMP_DIR="/tmp/stetnet_scripts"
@@ -37,7 +37,8 @@ show_menu() {
     echo "4) Pause installed scripts (disable timers)"
     echo "5) Resume installed scripts (enable timers)"
     echo "6) Check status"
-    echo "7) Uninstall"
+    echo "7) Check for updates"
+    echo "8) Uninstall"
     echo "0) Exit"
     echo "====================================="
 }
@@ -161,9 +162,29 @@ status_installed() {
     fi
 }
 
+# Compare one component's installed version with the version on the server
+report_version() {
+    server=$(server_version "$3")
+    if [ "$2" = "not installed" ]; then
+        echo "$1: not installed"
+    elif [ "$server" = "unavailable" ]; then
+        echo "$1: installed $2, could not reach the server"
+    elif [ "$2" = "$server" ]; then
+        echo "$1: up to date ($2)"
+    else
+        echo "$1: update available (installed $2, server $server)"
+    fi
+}
+
+check_updates() {
+    report_version "Menu" "$VERSION" menu.sh
+    report_version "Cloudflare/NextDNS" "$(installed_version "$CF_DIR/automatic_update.sh")" install_cloudflare.sh
+    report_version "WireGuard" "$(installed_version "$WG_DIR/wireguard-dns-resolver.sh")" install_wg.sh
+}
+
 while true; do
     show_menu
-    echo -n "Select an option [0-7]: "
+    echo -n "Select an option [0-8]: "
     read choice < /dev/tty
     case $choice in
         1)
@@ -240,6 +261,12 @@ while true; do
             read dummy < /dev/tty
             ;;
         7)
+            check_updates
+            echo ""
+            echo -n "Press Enter to return to menu..."
+            read dummy < /dev/tty
+            ;;
+        8)
             curl -fsSL --max-time 60 "$REPO_URL/uninstall_all.sh" -o "$TMP_DIR/uninstall_all.sh" && sh "$TMP_DIR/uninstall_all.sh"
             echo ""
             echo ""
