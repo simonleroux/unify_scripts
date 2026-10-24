@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.1"
+VERSION="1.0.2"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -104,7 +104,7 @@ EXPECTED_IP=\$(nslookup "\$ENDPOINT_DOMAIN" 1.1.1.1 2>/dev/null | sed -n '/^Name
 # Safety check
 if [ -z "\$EXPECTED_IP" ]; then
     echo "Error: DNS resolution for \$ENDPOINT_DOMAIN failed. Skipping check."
-    exit 1
+    exit 0
 fi
 
 # 2. Extract current remote IP

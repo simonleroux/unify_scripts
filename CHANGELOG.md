@@ -11,6 +11,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - `CHANGELOG.md` (this file).
 
 ### Changed
+- `install_wg.sh`: the resolver exits 0 when the DNS lookup fails and the check is skipped, so the failed lookup no longer marks the service as failed.
 - `install_cloudflare.sh`: the public IP and DNS lookup must both return a value, or the run is skipped.
 - `install_cloudflare.sh`: DNS lookup works with both BIND and busybox `nslookup` output. The current IP is checked against every A record.
 - `install_cloudflare.sh`: the NextDNS call is skipped when no URL is set.
