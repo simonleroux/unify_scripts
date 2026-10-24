@@ -34,8 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/head
 4) Pause installed scripts (disable timers)
 5) Resume installed scripts (enable timers)
 6) Check status
-7) Check for updates
-8) Uninstall
+7) Uninstall
 0) Exit
 ```
 
@@ -126,7 +125,7 @@ Remove **all** STETNET services and scripts (asks for confirmation):
 curl -fsSL https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main/uninstall_all.sh | sh
 ```
 
-Or use menu option 8.
+Or use menu option 7.
 
 ---
 

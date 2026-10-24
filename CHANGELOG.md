@@ -5,15 +5,15 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 ## Unreleased
 
 ### Added
-- Menu option 7 checks whether the menu and the installed Cloudflare/NextDNS and WireGuard components are up to date. Uninstall moved to option 8.
+- The menu header shows whether the menu and the installed Cloudflare/NextDNS and WireGuard components are up to date.
 - Menu option 3 updates installed scripts and keeps their saved settings.
 - Menu options 4 and 5 pause and resume the Cloudflare/NextDNS and WireGuard timers. Pausing keeps the unit files and only removes the enable links.
 - `VERSION` in every script. The menu shows the installed and server versions, and generated scripts and `status.sh` record theirs.
 - `CHANGELOG.md` (this file).
-- Menu option 7 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
+- Menu option 6 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
 
 ### Changed
-- `menu.sh`: menu order is now Update (3), Pause (4), Resume (5), Check status (6), Check for updates (7), Uninstall (8), Exit (0), with names matching the pfSense menu.
+- `menu.sh`: menu order is now Update (3), Pause (4), Resume (5), Check status (6), Uninstall (7), Exit (0), with names matching the pfSense menu.
 - `menu.sh`: exit the menu with option 0 (was 7). Options 1 to 6 are unchanged.
 - `install_cloudflare.sh`: the public IP and DNS lookup must both return a value, or the run is skipped.
 - `install_cloudflare.sh`: DNS lookup works with both BIND and busybox `nslookup` output. The current IP is checked against every A record.
