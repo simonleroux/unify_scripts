@@ -14,6 +14,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - Menu option 6 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
 
 ### Changed
+- `install_wg.sh`: the timer-run resolver skips its check while an advisory window is active, so the two no longer realign the same endpoint. Checks during the window do not log "Tunnel is healthy" every second. Version 1.0.12.
 - `install_wg.sh`: the endpoint check asks the zone's Cloudflare nameserver instead of 1.1.1.1, because public resolvers can lag behind a DNS change. The nameserver is found at install time, and it falls back to 1.1.1.1 if none is found. Version 1.0.11.
 - `install_wg.sh`: the resolver has a `--once` mode for single checks. Pause, resume, and uninstall also handle the advisory listener. `uninstall_all.sh` removes it.
 - `install_wg.sh`: after the resolver detects a DNS change, it checks every second for the next 30 seconds, so the tunnel realigns faster. The failover service has `TimeoutStartSec=120` to allow the longer run.

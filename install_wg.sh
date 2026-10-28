@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.11"
+VERSION="1.0.12"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -110,6 +110,7 @@ PUBLIC_KEY="$PUBLIC_KEY"
 ENDPOINT_DOMAIN="$ENDPOINT_DOMAIN"
 ENDPOINT_PORT="$ENDPOINT_PORT"
 DNS_SERVER="$DNS_SERVER"
+WINDOW_FILE="$SERVICE_DIR/advisory.window"
 # =======================================================
 export LC_ALL=C
 
@@ -131,7 +132,9 @@ check_and_realign() {
 
     # 3. Compare IPs
     if [ "\$CURRENT_IP" = "\$EXPECTED_IP" ]; then
-        echo "Tunnel is healthy."
+        if [ -z "\$QUIET" ]; then
+            echo "Tunnel is healthy."
+        fi
         return 0
     fi
     echo "Tunnel is UNHEALTHY. DNS says \$EXPECTED_IP, WireGuard is pointing to \$CURRENT_IP."
@@ -142,7 +145,13 @@ check_and_realign() {
 }
 
 if [ "\$1" = "--once" ]; then
+    QUIET=1
     check_and_realign
+    exit 0
+fi
+
+# A running advisory window does the checks, so the timer skips its run
+if [ -f "\$WINDOW_FILE" ] && [ "\$(date +%s)" -lt "\$(cat "\$WINDOW_FILE")" ]; then
     exit 0
 fi
 
@@ -212,6 +221,7 @@ EXPECTED_LINE="failover __KEY__"
 RESOLVER="__SERVICE_DIR__/wireguard-dns-resolver.sh"
 WINDOW_SEC=30
 window_end=0
+WINDOW_FILE="__SERVICE_DIR__/advisory.window"
 
 # Listen on the UniFi's own address on the tunnel. pfSense sends advisories to that address.
 ADDR=$(ip -4 -o addr show dev "$INTERFACE" 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1)
@@ -254,6 +264,7 @@ while true; do
         continue
     fi
     window_end=$((now + WINDOW_SEC))
+    echo "$window_end" > "$WINDOW_FILE"
     echo "Failover advisory received, checking DNS every 1s for ${WINDOW_SEC}s"
     i=0
     while [ "$i" -lt "$WINDOW_SEC" ]; do
