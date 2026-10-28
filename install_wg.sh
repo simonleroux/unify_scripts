@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.9"
+VERSION="1.0.10"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -211,29 +211,40 @@ echo "Listening for failover advisories on $ADDR:$PORT"
 # and are then ignored, because they fall inside the window.
 # The listener does not check the sender address. Packets only reach it through the
 # tunnel from the peer that holds the pfSense key, and the key check applies on top.
-# nc exits after each datagram on some builds, so restart it after every exit.
+# Each run of nc takes one line, then is stopped and started again. A listening
+# nc stays connected to the first sender's source port, so packets from other
+# source ports would be dropped without this. nc writes into a named pipe.
+FIFO="__SERVICE_DIR__/advisory.fifo"
 while true; do
-    while read -r line; do
-        # Strip a trailing carriage return. No tr stage here: tr buffers its output
-        # on a pipe, so lines would never reach this loop while nc stays open.
-        line=${line%$'\r'}
-        if [ "$line" != "$EXPECTED_LINE" ]; then
-            continue
-        fi
-        now=$(date +%s)
-        if [ "$now" -lt "$window_end" ]; then
-            continue
-        fi
-        window_end=$((now + WINDOW_SEC))
-        echo "Failover advisory received, checking DNS every 1s for ${WINDOW_SEC}s"
-        i=0
-        while [ "$i" -lt "$WINDOW_SEC" ]; do
-            bash "$RESOLVER" --once
-            sleep 1
-            i=$((i + 1))
-        done
-    done < <(nc -u -l -s "$ADDR" -p "$PORT")
-    sleep 1
+    rm -f "$FIFO"
+    mkfifo "$FIFO"
+    nc -u -l -s "$ADDR" -p "$PORT" > "$FIFO" &
+    NC_PID=$!
+    if ! read -r line < "$FIFO"; then
+        kill "$NC_PID" 2>/dev/null
+        wait "$NC_PID" 2>/dev/null
+        sleep 1
+        continue
+    fi
+    kill "$NC_PID" 2>/dev/null
+    wait "$NC_PID" 2>/dev/null
+    # Strip a trailing carriage return
+    line=${line%$'\r'}
+    if [ "$line" != "$EXPECTED_LINE" ]; then
+        continue
+    fi
+    now=$(date +%s)
+    if [ "$now" -lt "$window_end" ]; then
+        continue
+    fi
+    window_end=$((now + WINDOW_SEC))
+    echo "Failover advisory received, checking DNS every 1s for ${WINDOW_SEC}s"
+    i=0
+    while [ "$i" -lt "$WINDOW_SEC" ]; do
+        bash "$RESOLVER" --once
+        sleep 1
+        i=$((i + 1))
+    done
 done
 
 EOF

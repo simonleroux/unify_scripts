@@ -30,6 +30,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - `README.md`: rewritten for the current repo, menu, update, and pause/resume.
 
 ### Fixed
+- `install_wg.sh`: the advisory listener stops nc after each packet and starts it again through a named pipe. A listening nc stays bound to the first sender's source port, so later advisories from new source ports were dropped. Version 1.0.10.
 - `install_wg.sh`: the advisory listener restarts `nc` after each datagram instead of stopping after the first advisory, and keeps the window state across restarts.
 - `install_wg.sh`: the advisory listener is restarted on update, so a running listener picks up the new code.
 - `install_wg.sh`: the advisory listener no longer pipes through `tr`, which buffered packets until nc exited, so advisories were never acted on while nc stayed open.
