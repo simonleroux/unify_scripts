@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.10"
+VERSION="1.0.11"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -74,6 +74,21 @@ fi
 INTERVAL_SEC=${INTERVAL_SEC:-10}
 
 echo ""
+# Ask the zone's Cloudflare nameserver directly, so the check sees the new record
+# as soon as it goes live (public resolvers such as 1.1.1.1 can lag behind).
+ZONE=$(echo "$ENDPOINT_DOMAIN" | awk -F. '{print $(NF-1)"."$NF}')
+NS_NAME=$(nslookup -type=ns "$ZONE" 1.1.1.1 2>/dev/null | grep -oE '[a-zA-Z0-9.-]+\.ns\.cloudflare\.com' | head -n1)
+DNS_SERVER=""
+if [ -n "$NS_NAME" ]; then
+    DNS_SERVER=$(nslookup "$NS_NAME" 1.1.1.1 2>/dev/null | sed -n '/^Name/,$p' | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n1)
+fi
+if [ -z "$DNS_SERVER" ]; then
+    echo "⚠️ Could not find the Cloudflare nameserver for $ZONE, using 1.1.1.1 instead."
+    DNS_SERVER=1.1.1.1
+else
+    echo "✅ Checking $ENDPOINT_DOMAIN against $NS_NAME ($DNS_SERVER)"
+fi
+
 echo "🔧 Installing with:"
 echo "    Interface: $INTERFACE"
 echo "    Public Key: $PUBLIC_KEY"
@@ -94,6 +109,7 @@ INTERFACE="$INTERFACE"
 PUBLIC_KEY="$PUBLIC_KEY"
 ENDPOINT_DOMAIN="$ENDPOINT_DOMAIN"
 ENDPOINT_PORT="$ENDPOINT_PORT"
+DNS_SERVER="$DNS_SERVER"
 # =======================================================
 export LC_ALL=C
 
@@ -102,7 +118,7 @@ export LC_ALL=C
 check_and_realign() {
     # 1. Resolve the target domain name to get the expected IP
     # (parses the lines after "Name:" so both BIND and busybox nslookup output work)
-    EXPECTED_IP=\$(nslookup "\$ENDPOINT_DOMAIN" 1.1.1.1 2>/dev/null | sed -n '/^Name/,\$p' | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n1)
+    EXPECTED_IP=\$(nslookup "\$ENDPOINT_DOMAIN" "\$DNS_SERVER" 2>/dev/null | sed -n '/^Name/,\$p' | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | head -n1)
 
     # Safety check
     if [ -z "\$EXPECTED_IP" ]; then
