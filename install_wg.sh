@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.7"
+VERSION="1.0.9"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -211,25 +211,29 @@ echo "Listening for failover advisories on $ADDR:$PORT"
 # and are then ignored, because they fall inside the window.
 # The listener does not check the sender address. Packets only reach it through the
 # tunnel from the peer that holds the pfSense key, and the key check applies on top.
-nc -u -l -s "$ADDR" -p "$PORT" | while read -r line; do
-    # Strip a trailing carriage return. No tr stage here: tr buffers its output
-    # on a pipe, so lines would never reach this loop while nc stays open.
-    line=${line%$'\r'}
-    if [ "$line" != "$EXPECTED_LINE" ]; then
-        continue
-    fi
-    now=$(date +%s)
-    if [ "$now" -lt "$window_end" ]; then
-        continue
-    fi
-    window_end=$((now + WINDOW_SEC))
-    echo "Failover advisory received, checking DNS every 1s for ${WINDOW_SEC}s"
-    i=0
-    while [ "$i" -lt "$WINDOW_SEC" ]; do
-        bash "$RESOLVER" --once
-        sleep 1
-        i=$((i + 1))
-    done
+# nc exits after each datagram on some builds, so restart it after every exit.
+while true; do
+    while read -r line; do
+        # Strip a trailing carriage return. No tr stage here: tr buffers its output
+        # on a pipe, so lines would never reach this loop while nc stays open.
+        line=${line%$'\r'}
+        if [ "$line" != "$EXPECTED_LINE" ]; then
+            continue
+        fi
+        now=$(date +%s)
+        if [ "$now" -lt "$window_end" ]; then
+            continue
+        fi
+        window_end=$((now + WINDOW_SEC))
+        echo "Failover advisory received, checking DNS every 1s for ${WINDOW_SEC}s"
+        i=0
+        while [ "$i" -lt "$WINDOW_SEC" ]; do
+            bash "$RESOLVER" --once
+            sleep 1
+            i=$((i + 1))
+        done
+    done < <(nc -u -l -s "$ADDR" -p "$PORT")
+    sleep 1
 done
 
 EOF
@@ -266,7 +270,7 @@ systemctl start "$SERVICE_NAME"
 systemctl start "$TIMER_NAME"
 if [ -f /etc/systemd/system/wg_advisory.service ]; then
     systemctl enable wg_advisory.service
-    systemctl start wg_advisory.service
+    systemctl restart wg_advisory.service
 fi
 
 echo "📄 Adding status.sh..."

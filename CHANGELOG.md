@@ -30,6 +30,8 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - `README.md`: rewritten for the current repo, menu, update, and pause/resume.
 
 ### Fixed
+- `install_wg.sh`: the advisory listener restarts `nc` after each datagram instead of stopping after the first advisory, and keeps the window state across restarts.
+- `install_wg.sh`: the advisory listener is restarted on update, so a running listener picks up the new code.
 - `install_wg.sh`: the advisory listener no longer pipes through `tr`, which buffered packets until nc exited, so advisories were never acted on while nc stayed open.
 - `install_wg.sh`: the public key parse kept the trailing `=`, so the failover can realign the endpoint.
 - `install_wg.sh`: the failover timer has `AccuracySec=1s`. Without it, systemd can run the check up to a minute late.
