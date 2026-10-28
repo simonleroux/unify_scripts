@@ -1,6 +1,6 @@
 #!/bin/sh
 # Unifi_scripts Main Menu
-VERSION="1.0.6"
+VERSION="1.0.7"
 
 REPO_URL="https://raw.githubusercontent.com/simonleroux/unify_scripts/refs/heads/main"
 TMP_DIR="/tmp/stetnet_scripts"
@@ -119,6 +119,19 @@ resume_units() {
     systemctl enable "$2" "$1" && systemctl start "$1"
 }
 
+# The advisory listener is optional (only installed if nc is available), so these skip when it's missing
+pause_advisory() {
+    [ -f /etc/systemd/system/wg_advisory.service ] || return 0
+    systemctl stop wg_advisory.service && \
+        rm -f /etc/systemd/system/multi-user.target.wants/wg_advisory.service && \
+        systemctl daemon-reload
+}
+
+resume_advisory() {
+    [ -f /etc/systemd/system/wg_advisory.service ] || return 0
+    systemctl enable wg_advisory.service && systemctl start wg_advisory.service
+}
+
 pause_installed() {
     if [ -f "$CF_DIR/automatic_update.sh" ]; then
         if pause_units automatic_update.timer automatic_update.service; then
@@ -131,7 +144,7 @@ pause_installed() {
     fi
 
     if [ -f "$WG_DIR/wireguard-dns-resolver.sh" ]; then
-        if pause_units wg_failover.timer wg_failover.service; then
+        if pause_units wg_failover.timer wg_failover.service && pause_advisory; then
             echo "⏸️  WireGuard failover paused."
         else
             echo "❌ Could not pause the WireGuard failover."
@@ -153,7 +166,7 @@ resume_installed() {
     fi
 
     if [ -f "$WG_DIR/wireguard-dns-resolver.sh" ]; then
-        if resume_units wg_failover.timer wg_failover.service; then
+        if resume_units wg_failover.timer wg_failover.service && resume_advisory; then
             echo "▶️  WireGuard failover resumed."
         else
             echo "❌ Could not resume the WireGuard failover."

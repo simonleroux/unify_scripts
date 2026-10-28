@@ -5,6 +5,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 ## Unreleased
 
 ### Added
+- `install_wg.sh`: a failover advisory listener (`wg_advisory.service`) on UDP 50000, bound to the UniFi's tunnel address. A valid `failover <pfSense public key>` packet starts 30 seconds of DNS checks, one per second. Repeat packets inside the window are ignored. It is only installed if `nc` is available on the router. It does not check the packet's source address; WireGuard peer authentication and the key check apply.
 - The menu header shows whether the menu and the installed Cloudflare/NextDNS and WireGuard components are up to date.
 - Menu option 3 updates installed scripts and keeps their saved settings.
 - Menu options 4 and 5 pause and resume the Cloudflare/NextDNS and WireGuard timers. Pausing keeps the unit files and only removes the enable links.
@@ -13,6 +14,8 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - Menu option 6 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
 
 ### Changed
+- `install_wg.sh`: the resolver has a `--once` mode for single checks. Pause, resume, and uninstall also handle the advisory listener. `uninstall_all.sh` removes it.
+- `install_wg.sh`: after the resolver detects a DNS change, it checks every second for the next 30 seconds, so the tunnel realigns faster. The failover service has `TimeoutStartSec=120` to allow the longer run.
 - `menu.sh`: menu order is now Update (3), Pause (4), Resume (5), Check status (6), Uninstall (7), Exit (0), with names matching the pfSense menu.
 - `menu.sh`: exit the menu with option 0 (was 7). Options 1 to 6 are unchanged.
 - `install_cloudflare.sh`: the public IP and DNS lookup must both return a value, or the run is skipped.

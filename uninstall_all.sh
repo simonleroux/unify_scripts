@@ -1,6 +1,6 @@
 #!/bin/sh
 # STETNET Unifi_scripts Uninstaller
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 echo "⚠️ This will remove ALL STETNET services and scripts."
 read -p "Are you sure? [y/N]: " confirm < /dev/tty
@@ -10,7 +10,7 @@ if [ "$confirm" != "y" ]; then
 fi
 
 # Services/Timers to remove
-UNITS="automatic_update.service automatic_update.timer wg_failover.service wg_failover.timer"
+UNITS="automatic_update.service automatic_update.timer wg_failover.service wg_failover.timer wg_advisory.service"
 
 echo "🔧 Stopping and disabling services..."
 for unit in $UNITS; do

@@ -95,7 +95,7 @@ Installed to `/data/STETNET/automatic_update/`:
 
 ## 🔀 WireGuard Failover
 
-Menu option 2 installs a check for a WireGuard peer whose endpoint is a domain name. The check resolves the domain and, if the peer's endpoint IP no longer matches, sets the peer's endpoint to the new IP and restarts the interface.
+Menu option 2 installs a check for a WireGuard peer whose endpoint is a domain name. The check resolves the domain and, if the peer's endpoint IP no longer matches, sets the peer's endpoint to the new IP and restarts the interface. After a DNS change it checks every second for 30 seconds, so the tunnel realigns faster.
 
 You need:
 
@@ -137,6 +137,16 @@ To get the latest scripts without re-entering your settings, use menu option 3. 
 - **WireGuard:** interface, endpoint domain, and interval are read from `wireguard-dns-resolver.sh` and `wg_failover.timer`.
 
 Only components that are already installed are updated. Each one is skipped if its settings can't be read.
+
+## 📡 Failover Advisory (pfSense)
+
+If the WireGuard failover is installed and the UniFi has `nc`, a listener on UDP port 50000 accepts advisories from pfSense. It listens on the UniFi's own tunnel address. A packet with the text `failover <pfSense tunnel public key>` starts 30 seconds of DNS checks, one per second, so the tunnel moves to the new endpoint sooner. Repeat packets inside the window are ignored.
+
+Requirements:
+- The UniFi firewall must allow UDP 50000 from the tunnel. The listener accepts packets from any source that arrives over the tunnel, so the peer's AllowedIPs can be 0.0.0.0/0. WireGuard peer authentication and the key check are the protections.
+- The public key in the advisory must match the WireGuard peer key stored on the UniFi.
+
+---
 
 ## ⏸️ Pausing and Resuming
 
