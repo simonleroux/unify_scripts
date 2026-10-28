@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.6"
+VERSION="1.0.7"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -211,7 +211,10 @@ echo "Listening for failover advisories on $ADDR:$PORT"
 # and are then ignored, because they fall inside the window.
 # The listener does not check the sender address. Packets only reach it through the
 # tunnel from the peer that holds the pfSense key, and the key check applies on top.
-nc -u -l -s "$ADDR" -p "$PORT" | tr -d '\r' | while read -r line; do
+nc -u -l -s "$ADDR" -p "$PORT" | while read -r line; do
+    # Strip a trailing carriage return. No tr stage here: tr buffers its output
+    # on a pipe, so lines would never reach this loop while nc stays open.
+    line=${line%$'\r'}
     if [ "$line" != "$EXPECTED_LINE" ]; then
         continue
     fi
