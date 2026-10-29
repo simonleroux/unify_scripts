@@ -14,6 +14,7 @@ Every change to the scripts is recorded here. Each script has a `VERSION` line; 
 - Menu option 6 shows the status of the installed Cloudflare/NextDNS and WireGuard components.
 
 ### Changed
+- `install_wg.sh`: a timer-detected DNS change now writes the shared window file, and the listener ignores advisories while a window is active. Only one window runs at a time, so the two no longer realign in opposite directions. Version 1.0.13.
 - `install_wg.sh`: the timer-run resolver skips its check while an advisory window is active, so the two no longer realign the same endpoint. Checks during the window do not log "Tunnel is healthy" every second. Version 1.0.12.
 - `install_wg.sh`: the endpoint check asks the zone's Cloudflare nameserver instead of 1.1.1.1, because public resolvers can lag behind a DNS change. The nameserver is found at install time, and it falls back to 1.1.1.1 if none is found. Version 1.0.11.
 - `install_wg.sh`: the resolver has a `--once` mode for single checks. Pause, resume, and uninstall also handle the advisory listener. `uninstall_all.sh` removes it.

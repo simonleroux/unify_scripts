@@ -1,6 +1,6 @@
 #!/bin/sh
 # WireGuard Failover Installer - Smart Auto-Detection Version
-VERSION="1.0.12"
+VERSION="1.0.13"
 
 SERVICE_DIR="/data/STETNET/wg_failover"
 SERVICE_NAME="wg_failover.service"
@@ -163,6 +163,7 @@ fi
 
 # The endpoint just changed: check every second for the next 30 seconds
 if [ "\$result" -eq 2 ]; then
+    echo "\$((\$(date +%s) + 30))" > "\$WINDOW_FILE"
     echo "DNS change detected, checking every 1s for 30s..."
     i=0
     while [ "\$i" -lt 30 ]; do
@@ -260,6 +261,9 @@ while true; do
         continue
     fi
     now=$(date +%s)
+    if [ -f "$WINDOW_FILE" ] && [ "$now" -lt "$(cat "$WINDOW_FILE" 2>/dev/null || echo 0)" ]; then
+        continue
+    fi
     if [ "$now" -lt "$window_end" ]; then
         continue
     fi
